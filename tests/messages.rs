@@ -101,8 +101,9 @@ async fn test_with_backoff_functionality() {
 
     let mut custom_backoff = ExponentialBackoff::default();
     custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
-    custom_backoff.initial_interval = Duration::from_millis(100);
-    custom_backoff.multiplier = 1.2;
+    custom_backoff.initial_interval = Duration::from_millis(50);  // Adjust initial interval
+    custom_backoff.multiplier = 1.5;  // Adjust multiplier for more aggressive backoff
+    custom_backoff.randomization_factor = 0.0;  // Remove randomness to better control intervals
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -204,8 +205,9 @@ async fn test_custom_backoff_retries() {
 
     let mut custom_backoff = ExponentialBackoff::default();
     custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
-    custom_backoff.initial_interval = Duration::from_millis(100);
-    custom_backoff.multiplier = 1.2;
+    custom_backoff.initial_interval = Duration::from_millis(50);  // Adjust initial interval
+    custom_backoff.multiplier = 1.5;  // Adjust multiplier for more aggressive backoff
+    custom_backoff.randomization_factor = 0.0;  // Remove randomness to better control intervals
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -359,4 +361,5 @@ async fn test_error_handling_unauthorized() {
         "actual: {:?}",
         &result
     )
+}
 }
