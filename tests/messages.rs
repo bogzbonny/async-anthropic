@@ -89,8 +89,8 @@ async fn test_with_backoff_functionality() {
         .await;
 
     let mut custom_backoff = ExponentialBackoff::default();
-    custom_backoff.max_elapsed_time = Some(Duration::from_secs(2));
-    custom_backoff.initial_interval = Duration::from_millis(100);
+    custom_backoff.max_elapsed_time = Some(Duration::from_secs(3));
+    custom_backoff.initial_interval = Duration::from_millis(500);
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -186,8 +186,8 @@ async fn test_custom_backoff_retries() {
         .await;
 
     let mut custom_backoff = ExponentialBackoff::default();
-    custom_backoff.max_elapsed_time = Some(Duration::from_secs(2));
-    custom_backoff.initial_interval = Duration::from_millis(100);
+    custom_backoff.max_elapsed_time = Some(Duration::from_secs(3));
+    custom_backoff.initial_interval = Duration::from_millis(500);
 
     let client = Client::builder()
         .base_url(server.uri())
