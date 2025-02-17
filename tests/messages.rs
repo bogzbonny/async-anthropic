@@ -9,6 +9,7 @@ use serde_json::json;
 use std::time::Duration;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
+use tracing::{info, Level};
 use tracing_subscriber;
 
 // Helper trait for setting up and tearing down mock server
@@ -27,7 +28,9 @@ impl MockApp for TestSetup {
 }
 
 fn init_logging() {
-    let _ = tracing_subscriber::fmt::try_init();
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(Level::INFO)
+        .try_init();
 }
 
 #[tokio::test]
@@ -119,11 +122,12 @@ async fn test_with_backoff_functionality() {
         .build()
         .unwrap();
 
+    info!("Sending request with custom backoff settings");
     let result = client.messages().create(request).await;
 
     match result {
         Ok(_) => panic!("Expected request to fail and exhaust backoff"),
-        Err(_) => (), // Test should pass if we get an error
+        Err(_) => info!("Request failed as expected due to backoff exhaustion"),
     }
 }
 
@@ -168,10 +172,12 @@ async fn test_default_backoff_retries() {
         .build()
         .unwrap();
 
+    info!("Sending request with default backoff settings");
     let result = client.messages().create(request).await;
 
     match result {
         Ok(success) => {
+            info!("Request succeeded as expected after retry");
             if let Some(content) = success.content {
                 if let MessageContent::Text(text) = &content[0] {
                     assert_eq!(text.text, "retried response");
@@ -219,9 +225,10 @@ async fn test_custom_backoff_retries() {
         .build()
         .unwrap();
 
+    info!("Sending request with customized backoff settings");
     let result = client.messages().create(request).await;
 
-    assert!(result.is_err()); // Because retries should exhaust custom backoff
+    assert!(result.is_err(), "Request should fail due to backoff exhaustion");
 }
 
 #[tokio::test]
