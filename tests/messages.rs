@@ -9,6 +9,7 @@ use serde_json::json;
 use std::time::Duration;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
+use tracing_subscriber;
 
 // Helper trait for setting up and tearing down mock server
 #[async_trait]
@@ -25,8 +26,13 @@ impl MockApp for TestSetup {
     }
 }
 
+fn init_logging() {
+    let _ = tracing_subscriber::fmt::try_init();
+}
+
 #[tokio::test]
 async fn test_client_build_request() {
+    init_logging();
     let secret_key = "test_secret";
 
     let request = Client::builder().api_key(secret_key).build();
@@ -36,6 +42,7 @@ async fn test_client_build_request() {
 
 #[test_log::test(tokio::test)]
 async fn test_successful_request_execution() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -77,6 +84,7 @@ async fn test_successful_request_execution() {
 
 #[tokio::test]
 async fn test_with_backoff_functionality() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -90,8 +98,8 @@ async fn test_with_backoff_functionality() {
 
     let mut custom_backoff = ExponentialBackoff::default();
     custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
-    custom_backoff.initial_interval = Duration::from_millis(50);
-    custom_backoff.multiplier = 1.5; // Adjust the backoff strategy
+    custom_backoff.initial_interval = Duration::from_millis(100);
+    custom_backoff.multiplier = 1.2;
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -121,6 +129,7 @@ async fn test_with_backoff_functionality() {
 
 #[tokio::test]
 async fn test_default_backoff_retries() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -175,6 +184,7 @@ async fn test_default_backoff_retries() {
 
 #[tokio::test]
 async fn test_custom_backoff_retries() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -188,8 +198,8 @@ async fn test_custom_backoff_retries() {
 
     let mut custom_backoff = ExponentialBackoff::default();
     custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
-    custom_backoff.initial_interval = Duration::from_millis(50);
-    custom_backoff.multiplier = 1.5;
+    custom_backoff.initial_interval = Duration::from_millis(100);
+    custom_backoff.multiplier = 1.2;
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -203,7 +213,7 @@ async fn test_custom_backoff_retries() {
         .stream(true)
         .messages(vec![MessageBuilder::default()
             .role(MessageRole::User)
-            .content("Hello world!")
+            .content("Hello world!".to_string())
             .build()
             .unwrap()])
         .build()
@@ -217,6 +227,7 @@ async fn test_custom_backoff_retries() {
 #[tokio::test]
 #[ignore = "streaming not implemented"]
 async fn test_streaming_response() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -240,7 +251,7 @@ async fn test_streaming_response() {
         .stream(true)
         .messages(vec![MessageBuilder::default()
             .role(MessageRole::User)
-            .content("Hello world!")
+            .content("Hello world!".to_string())
             .build()
             .unwrap()])
         .build()
@@ -257,6 +268,7 @@ async fn test_streaming_response() {
 
 #[tokio::test]
 async fn test_error_handling_bad_request() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -279,7 +291,7 @@ async fn test_error_handling_bad_request() {
         .stream(true)
         .messages(vec![MessageBuilder::default()
             .role(MessageRole::User)
-            .content("Hello world!")
+            .content("Hello world!".to_string())
             .build()
             .unwrap()])
         .build()
@@ -300,6 +312,7 @@ async fn test_error_handling_bad_request() {
 
 #[tokio::test]
 async fn test_error_handling_unauthorized() {
+    init_logging();
     let server = TestSetup::setup().await;
     let secret_key = "test_secret";
 
@@ -322,7 +335,7 @@ async fn test_error_handling_unauthorized() {
         .stream(true)
         .messages(vec![MessageBuilder::default()
             .role(MessageRole::User)
-            .content("Hello world!")
+            .content("Hello world!".to_string())
             .build()
             .unwrap()])
         .build()
