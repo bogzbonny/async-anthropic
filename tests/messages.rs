@@ -83,14 +83,15 @@ async fn test_with_backoff_functionality() {
     // Mock 500 Internal Server Error, expecting retries
     Mock::given(method("POST"))
         .and(path("/v1/messages"))
-        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(100)))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(50)))
         .expect(3)
         .mount(&server)
         .await;
 
     let mut custom_backoff = ExponentialBackoff::default();
-    custom_backoff.max_elapsed_time = Some(Duration::from_secs(3));
-    custom_backoff.initial_interval = Duration::from_millis(500);
+    custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
+    custom_backoff.initial_interval = Duration::from_millis(50);
+    custom_backoff.multiplier = 1.5; // Adjust the backoff strategy
 
     let client = Client::builder()
         .base_url(server.uri())
@@ -126,7 +127,7 @@ async fn test_default_backoff_retries() {
     // Mock 500 Internal Server Error initially, and success upon retry
     Mock::given(method("POST"))
         .and(path("/v1/messages"))
-        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(200)))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(100)))
         .expect(2)
         .mount(&server)
         .await;
@@ -180,14 +181,15 @@ async fn test_custom_backoff_retries() {
     // Mock 500 Internal Server Error, expecting retries
     Mock::given(method("POST"))
         .and(path("/v1/messages"))
-        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(100)))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(50)))
         .expect(3)  // Expect more retries with custom settings
         .mount(&server)
         .await;
 
     let mut custom_backoff = ExponentialBackoff::default();
-    custom_backoff.max_elapsed_time = Some(Duration::from_secs(3));
-    custom_backoff.initial_interval = Duration::from_millis(500);
+    custom_backoff.max_elapsed_time = Some(Duration::from_secs(5));
+    custom_backoff.initial_interval = Duration::from_millis(50);
+    custom_backoff.multiplier = 1.5;
 
     let client = Client::builder()
         .base_url(server.uri())
