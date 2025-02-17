@@ -199,7 +199,7 @@ async fn test_custom_backoff_retries() {
     Mock::given(method("POST"))
         .and(path("/v1/messages"))
         .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error").set_delay(Duration::from_millis(50)))
-        .expect(3)  // Expect more retries with custom settings
+        .expect(3)
         .mount(&server)
         .await;
 
@@ -316,7 +316,7 @@ async fn test_error_handling_bad_request() {
         ),
         "actual: {:?}",
         &result
-    )
+    );
 }
 
 #[tokio::test]
@@ -360,6 +360,5 @@ async fn test_error_handling_unauthorized() {
         ),
         "actual: {:?}",
         &result
-    )
-}
+    );
 }
